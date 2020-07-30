@@ -13,6 +13,9 @@ mainDiv.appendChild(countDownP);
 
 
 class ChessTable {
+
+    selected1 = null;
+    selected2 = null;
     static initialState = [
         ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
         ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
@@ -33,14 +36,33 @@ class ChessTable {
         }
     }
 
-    
+
 
     createTable() {
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
                 this.chessMatrix[i][j] = new Square(i, j);
-                this.chessMatrix[i][j].elem.addEventListener('click', ()=> {
-                    console.log(this.chessMatrix[i][j].removePiece());
+
+                this.chessMatrix[i][j].elem.addEventListener('click', () => {
+                    if (this.selected1 == null) {
+                        if (this.chessMatrix[i][j].piece != null) {
+                            this.selected1 = this.chessMatrix[i][j];
+                            console.log(this.selected1 + "s1");
+                        }
+
+                    }
+                    else {
+                        this.selected2 = this.chessMatrix[i][j];
+                        console.log(this.selected1 + "s2");
+                        //ifcanmove
+                        console.log(this.selected1.piece.legalMove(this.selected1.xCoord, this.selected1.yCoord,
+                            this.selected2.xCoord, this.selected2.yCoord, this.chessMatrix));
+                        this.selected2.setPiece(this.selected1.removePiece());
+                        this.selected2.elem.blur();
+                        this.selected1 = null;
+                        this.selected2 = null;
+
+                    }
                 })
             }
         }
@@ -48,7 +70,7 @@ class ChessTable {
 
     }
 
-    
+
 
     addPieces() {
         for (let i = 0; i < 8; i++) {
@@ -56,40 +78,40 @@ class ChessTable {
                 let actualPiece = null;
                 switch (ChessTable.initialState[i][j]) {
                     case 'bR':
-                        actualPiece = new BlackTower();
+                        actualPiece = new Tower('Black');
                         break;
                     case 'bN':
-                        actualPiece=new BlackHorse();
+                        actualPiece = new Horse('Black');
                         break;
                     case 'bB':
-                        actualPiece=new BlackBishop();
+                        actualPiece = new Bishop('Black');
                         break;
                     case 'bQ':
-                        actualPiece=new BlackQueen();
+                        actualPiece = new Queen('Black');
                         break;
                     case 'bK':
-                        actualPiece=new BlackKing();
+                        actualPiece = new King('Black');
                         break;
                     case 'bP':
-                        actualPiece=new BlackPawn();
+                        actualPiece = new Pawn('Black');
                         break;
                     case 'wR':
-                        actualPiece=new WhiteTower();
+                        actualPiece = new Tower('White');
                         break;
                     case 'wN':
-                        actualPiece=new WhiteHorse();
+                        actualPiece = new Horse('White');
                         break;
                     case 'wB':
-                        actualPiece=new WhiteBishop();
+                        actualPiece = new Bishop('White');
                         break;
                     case 'wQ':
-                        actualPiece=new WhiteQueen();
+                        actualPiece = new Queen('White');
                         break;
                     case 'wK':
-                        actualPiece=new WhiteKing();
+                        actualPiece = new King('White');
                         break;
                     case 'wP':
-                        actualPiece=new WhitePawn();
+                        actualPiece = new Pawn('White');
                         break;
                 }
                 this.chessMatrix[i][j].setPiece(actualPiece);
@@ -177,9 +199,9 @@ class Square {
             this.elem.classList.add('black-div')
         }
 
-        this.elem.tabIndex="1";
-        
-        
+        this.elem.tabIndex = "1";
+
+
 
     }
 
@@ -191,10 +213,10 @@ class Square {
         }
     }
 
-    removePiece(){
-        if(this.elem.childNodes[0]){
+    removePiece() {
+        if (this.elem.childNodes[0]) {
             let toRemove = this.elem.removeChild(this.elem.childNodes[0]);
-        return toRemove;
+            return this.piece;
         }
         else return null;
     }
@@ -203,88 +225,127 @@ class Square {
 }
 
 class Piece {
-    constructor(elem = null) {
+    static firstMoveCount = 0;
+    constructor(elem = null, color = null) {
+        this.color = color;
         this.elem = document.createElement('img');
         this.elem.style.marginTop = "10px";
-        this.elem.src = this.constructor.getImage();
+        //this.elem.src = this.constructor.getImage();
+        this.elem.src = this.constructor.name.toLowerCase() + color.toLowerCase() + ".png";
+        console.log(this.elem.src);
     }
 
 }
 
 
-class WhiteBishop extends Piece {
-    static getImage() {
-        return 'bsWhite.png';
+class Bishop extends Piece {
+    constructor(color = null) {
+        super(null, color)
     }
 
-    canMove(){
+}
 
+class Tower extends Piece {
+    constructor(color = null) {
+        super(null, color)
     }
 }
 
-class BlackBishop extends Piece {
-    static getImage() {
-        return 'bsBlack.png';
+class Horse extends Piece {
+    constructor(color = null) {
+        super(null, color)
     }
 }
 
-class WhiteTower extends Piece {
-    static getImage() {
-        return 'towerWhite.png';
+class King extends Piece {
+    constructor(color = null) {
+        super(null, color)
     }
 }
 
-class BlackTower extends Piece {
-    static getImage() {
-        return 'towerBlack.png';
+class Queen extends Piece {
+    constructor(color = null) {
+        super(null, color)
     }
 }
 
-class WhiteHorse extends Piece {
-    static getImage() {
-        return 'horseWhite.png';
+class Pawn extends Piece {
+    static firstWhiteMove = true;
+    static firstBlackMove = true;
+    constructor(color = null) {
+        super(null, color)
     }
-}
 
-class BlackHorse extends Piece {
-    static getImage() {
-        return 'horseBlack.png';
-    }
-}
+    legalMove(initialX, initialY, toX, toY, state) {
+        console.log(initialX + ' ' + initialY + ' ' + toX + ' ' + toY);
+        if (this.color.toLowerCase() == 'white') {
+            if (this.constructor.firstWhiteMove) {
+                if (toX - initialX != -1 && toX - initialX != -2) {
+                    return false;
+                }
+                if(toY!=initialY){
+                    return false;
+                }
+            }
+            else { //daca nu e prima mutare
+                if (toX - initialX != -1) {
+                    console.log('entered if1');
+                    return false;
+                }
+                if (toY == initialY && state[toX][toY].piece != null) {
+                    console.log('entered if2');
+                    return false; //avem piesa in cazul de mers in fata
+                }
+                if ((toY == initialY + 1 || toY == initialY - 1) && state[toX][toY].piece == null) {
+                    return false;
+                }
+                if (toY == initialY - 1 && state[toX][toY].piece.color.toLowerCase() != 'black') {
+                    console.log('entered if3'); //avem piesa de aceeasi culoare pentru mers pe diag
+                    return false;
+                }
+                if (toY == initialY + 1 && state[toX][toY].piece.color.toLowerCase() != 'black') {
+                    console.log('entered if4'); //avem piesa de aceeasi culoare pentru mers pe diag
+                    return false;
+                }
+            }
 
-class WhiteKing extends Piece {
-    static getImage() {
-        return 'kWhite.png';
-    }
-}
 
-class BlackKing extends Piece {
-    static getImage() {
-        return 'kBlack.png';
-    }
-}
+            this.constructor.firstWhiteMove = false;
+            return true;
+        }
+        else { //black moves
+            if (this.constructor.firstBlackMove) {
+                if (toX - initialX != 1 && toX - initialX != 2) {
+                    return false;
+                }
+                if(toY!=initialY){
+                    return false;
+                }
+            }
+            else {
+                if (toX - initialX != 1) {
+                    return false;
+                }
+                if (toY == initialY && state[toX][toY].piece != null) {
+                    console.log('entered if2');
+                    return false; //avem piesa in cazul de mers in fata
+                }
+                if (toY == initialY - 1 && state[toX][toY].piece.color.toLowerCase() != 'white') {
+                    console.log('entered if3'); //avem piesa in cazul de mers
+                    return false;
+                }
+                if (toY == initialY + 1 && state[toX][toY].piece.color.toLowerCase() != 'white') {
+                    console.log('entered if4');
+                    return false;
+                }
+            }
 
-class WhiteQueen extends Piece {
-    static getImage() {
-        return 'queenWhite.png';
-    }
-}
-
-class BlackQueen extends Piece {
-    static getImage() {
-        return 'queenBlack.png';
-    }
-}
-
-class WhitePawn extends Piece {
-    static getImage() {
-        return 'pawnWhite.png';
-    }
-}
-
-class BlackPawn extends Piece {
-    static getImage() {
-        return 'pawnBlack.png';
+            if (toY != initialY - 1 && toY != initialY && toY != initialY + 1) {
+                return false;
+            }
+            this.constructor.firstBlackMove = false;
+            return true;
+        }
     }
 }
 
