@@ -49,15 +49,21 @@ class ChessTable {
                             this.selected1 = this.chessMatrix[i][j];
                             console.log(this.selected1 + "s1");
                         }
-
                     }
                     else {
                         this.selected2 = this.chessMatrix[i][j];
                         console.log(this.selected1 + "s2");
-                        //ifcanmove
-                        console.log(this.selected1.piece.legalMove(this.selected1.xCoord, this.selected1.yCoord,
-                            this.selected2.xCoord, this.selected2.yCoord, this.chessMatrix));
-                        this.selected2.setPiece(this.selected1.removePiece());
+                        if (this.selected1.piece.legalMove(this.selected1.xCoord, this.selected1.yCoord,
+                            this.selected2.xCoord, this.selected2.yCoord, this.chessMatrix)) {
+
+                            if (this.selected2.piece != null) {
+                                console.log('entered to remove piece in battle');
+                                console.log(this.selected2.piece);
+                                console.log(this.selected2.removePiece());
+                            }
+                            this.selected2.setPiece(this.selected1.removePiece());
+
+                        }
                         this.selected2.elem.blur();
                         this.selected1 = null;
                         this.selected2 = null;
@@ -216,7 +222,9 @@ class Square {
     removePiece() {
         if (this.elem.childNodes[0]) {
             let toRemove = this.elem.removeChild(this.elem.childNodes[0]);
-            return this.piece;
+            let valToRet = this.piece;
+            this.piece = null;
+            return valToRet;
         }
         else return null;
     }
@@ -225,7 +233,8 @@ class Square {
 }
 
 class Piece {
-    static firstMoveCount = 0;
+    static firstWhiteMove = true;
+    static firstBlackMove = true;
     constructor(elem = null, color = null) {
         this.color = color;
         this.elem = document.createElement('img');
@@ -233,6 +242,9 @@ class Piece {
         //this.elem.src = this.constructor.getImage();
         this.elem.src = this.constructor.name.toLowerCase() + color.toLowerCase() + ".png";
         console.log(this.elem.src);
+    }
+    legalMove(initialX, initialY, toX, toY, state) {
+        return true;
     }
 
 }
@@ -243,35 +255,84 @@ class Bishop extends Piece {
         super(null, color)
     }
 
+
+
 }
 
 class Tower extends Piece {
     constructor(color = null) {
         super(null, color)
     }
+
+    legalMove(initialX, initialY, toX, toY, state) {
+        if (initialX != toX && initialY != toY) {
+            return false;
+        }
+        if (initialX == toX && initialY == toY) {
+            return false;
+        }
+        if (state[toX][toY].piece!=null && state[toX][toY].piece.color.toLowerCase() == state[initialX][initialY].piece.color.toLowerCase()) {
+            return false;
+        }
+        if (initialX == toX && initialY < toY) {
+            //pana la patratu in care vreau sa ajung sa nu fie nicio alta piesa
+            for (let i = initialY + 1; i < toY; i++) {
+                if (state[initialX][i].piece != null) {
+                    return false;
+                }
+            }
+        }
+        if (initialX == toX && initialY > toY) {
+            //pana la patratu in care vreau sa ajung sa nu fie nicio alta piesa
+            for (let i = toY + 1; i < initialY; i++) {
+                if (state[initialX][i].piece != null) {
+                    return false;
+                }
+            }
+        }
+        if (initialY == toY && initialX < toX) {
+            for (let i = initialX + 1; i < toX; i++) {
+                if (state[i][initialY].piece != null) {
+                    return false;
+                }
+            }
+        }
+        if (initialY == toY && initialX > toX) {
+            for (let i = toX + 1; i < initialX; i++) {
+                if (state[i][initialY].piece != null) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
 }
 
 class Horse extends Piece {
     constructor(color = null) {
         super(null, color)
     }
+
 }
 
 class King extends Piece {
     constructor(color = null) {
         super(null, color)
     }
+
 }
 
 class Queen extends Piece {
     constructor(color = null) {
         super(null, color)
     }
+
 }
 
 class Pawn extends Piece {
-    static firstWhiteMove = true;
-    static firstBlackMove = true;
+
     constructor(color = null) {
         super(null, color)
     }
@@ -283,7 +344,7 @@ class Pawn extends Piece {
                 if (toX - initialX != -1 && toX - initialX != -2) {
                     return false;
                 }
-                if(toY!=initialY){
+                if (toY != initialY) {
                     return false;
                 }
             }
@@ -318,7 +379,7 @@ class Pawn extends Piece {
                 if (toX - initialX != 1 && toX - initialX != 2) {
                     return false;
                 }
-                if(toY!=initialY){
+                if (toY != initialY) {
                     return false;
                 }
             }
@@ -329,6 +390,9 @@ class Pawn extends Piece {
                 if (toY == initialY && state[toX][toY].piece != null) {
                     console.log('entered if2');
                     return false; //avem piesa in cazul de mers in fata
+                }
+                if ((toY == initialY + 1 || toY == initialY - 1) && state[toX][toY].piece == null) {
+                    return false;
                 }
                 if (toY == initialY - 1 && state[toX][toY].piece.color.toLowerCase() != 'white') {
                     console.log('entered if3'); //avem piesa in cazul de mers
