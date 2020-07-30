@@ -18,12 +18,30 @@
     height: 90px;
     width: 90px;
     background-color: rgb(250, 229, 212);
+    
+    
+}
+
+.white-div:hover{
+    opacity: 70%;
+}
+
+.white-div:focus{
+    background-color: yellowgreen;
 }
 
 .black-div {
     height: 90px;
     width: 90px;
-    background-color: rgb(48, 44, 44);
+    background-color: gray
+}
+
+.black-div:hover {
+    opacity: 70%;
+}
+
+.black-div:focus{
+    background-color: yellowgreen;
 }
 
 .grid-div{
@@ -39,3 +57,4 @@
     grid-template-columns: auto auto auto auto auto auto auto auto;
     grid-gap: 0px;
   }
+
