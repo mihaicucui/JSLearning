@@ -14,8 +14,8 @@ mainDiv.appendChild(countDownP);
 
 class ChessTable {
 
-    selected1 = null;
-    selected2 = null;
+    fromSquare = null;
+    toSquare = null;
     static initialState = [
         ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
         ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
@@ -44,82 +44,75 @@ class ChessTable {
                 this.chessMatrix[i][j] = new Square(i, j);
 
                 this.chessMatrix[i][j].elem.addEventListener('click', () => {
-                    if (this.selected1 == null) {
+                    if (this.fromSquare == null) {
                         if (this.chessMatrix[i][j].piece != null) {
-                            this.selected1 = this.chessMatrix[i][j];
-                            console.log(this.selected1 + "s1");
+                            this.fromSquare = this.chessMatrix[i][j];
+                            console.log(this.fromSquare + "s1");
                         }
                     }
                     else {
-                        this.selected2 = this.chessMatrix[i][j];
-                        console.log(this.selected1 + "s2");
-                        if (this.selected1.piece.legalMove(this.selected1.xCoord, this.selected1.yCoord,
-                            this.selected2.xCoord, this.selected2.yCoord, this.chessMatrix)) {
+                        this.toSquare = this.chessMatrix[i][j];
+                        console.log(this.fromSquare + "s2");
+                        if (this.fromSquare.piece.legalMove(this.fromSquare.xCoord, this.fromSquare.yCoord,
+                            this.toSquare.xCoord, this.toSquare.yCoord, this.chessMatrix)) {
 
-                            if (this.selected2.piece != null) {
+                            if (this.toSquare.piece != null) {
                                 console.log('entered to remove piece in battle');
-                                console.log(this.selected2.piece);
-                                console.log(this.selected2.removePiece());
+                                console.log(this.toSquare.piece);
+                                console.log(this.toSquare.removePiece());
                             }
-                            this.selected2.setPiece(this.selected1.removePiece());
+                            this.toSquare.setPiece(this.fromSquare.removePiece());
 
                         }
-                        this.selected2.elem.blur();
-                        this.selected1 = null;
-                        this.selected2 = null;
+                        this.toSquare.elem.blur();
+                        this.fromSquare = null;
+                        this.toSquare = null;
 
                     }
-                })
+                }
+                )
+                //this.chessMatrix[i][j].elem.addEventListener('click', this.clickFunction.bind(this));
             }
         }
-
-
     }
+
+    clickFunction(event){
+        console.log(event.srcElement);
+        return;
+        if (this.fromSquare == null) {
+            if (this.chessMatrix[i][j].piece != null) {
+                this.fromSquare = this.chessMatrix[i][j];
+                console.log(this.fromSquare + "s1");
+            }
+        }
+        else {
+            this.toSquare = this.chessMatrix[i][j];
+            console.log(this.fromSquare + "s2");
+            if (this.fromSquare.piece.legalMove(this.fromSquare.xCoord, this.fromSquare.yCoord,
+                this.toSquare.xCoord, this.toSquare.yCoord, this.chessMatrix)) {
+
+                if (this.toSquare.piece != null) {
+                    console.log('entered to remove piece in battle');
+                    console.log(this.toSquare.piece);
+                    console.log(this.toSquare.removePiece());
+                }
+                this.toSquare.setPiece(this.fromSquare.removePiece());
+
+            }
+            this.toSquare.elem.blur();
+            this.fromSquare = null;
+            this.toSquare = null;
+
+        }
+    }
+    
 
 
 
     addPieces() {
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
-                let actualPiece = null;
-                switch (ChessTable.initialState[i][j]) {
-                    case 'bR':
-                        actualPiece = new Tower('Black');
-                        break;
-                    case 'bN':
-                        actualPiece = new Horse('Black');
-                        break;
-                    case 'bB':
-                        actualPiece = new Bishop('Black');
-                        break;
-                    case 'bQ':
-                        actualPiece = new Queen('Black');
-                        break;
-                    case 'bK':
-                        actualPiece = new King('Black');
-                        break;
-                    case 'bP':
-                        actualPiece = new Pawn('Black');
-                        break;
-                    case 'wR':
-                        actualPiece = new Tower('White');
-                        break;
-                    case 'wN':
-                        actualPiece = new Horse('White');
-                        break;
-                    case 'wB':
-                        actualPiece = new Bishop('White');
-                        break;
-                    case 'wQ':
-                        actualPiece = new Queen('White');
-                        break;
-                    case 'wK':
-                        actualPiece = new King('White');
-                        break;
-                    case 'wP':
-                        actualPiece = new Pawn('White');
-                        break;
-                }
+                let actualPiece = Piece.createPiece(ChessTable.initialState[i][j]);
                 this.chessMatrix[i][j].setPiece(actualPiece);
             }
         }
@@ -207,8 +200,6 @@ class Square {
 
         this.elem.tabIndex = "1";
 
-
-
     }
 
     setPiece(piece) {
@@ -247,6 +238,51 @@ class Piece {
         return true;
     }
 
+    static createPiece(description) {
+        let actualPiece = null;
+        switch (description) {
+            case 'bR':
+                actualPiece = new Tower('Black');
+                break;
+            case 'bN':
+                actualPiece = new Horse('Black');
+                break;
+            case 'bB':
+                actualPiece = new Bishop('Black');
+                break;
+            case 'bQ':
+                actualPiece = new Queen('Black');
+                break;
+            case 'bK':
+                actualPiece = new King('Black');
+                break;
+            case 'bP':
+                actualPiece = new Pawn('Black');
+                break;
+            case 'wR':
+                actualPiece = new Tower('White');
+                break;
+            case 'wN':
+                actualPiece = new Horse('White');
+                break;
+            case 'wB':
+                actualPiece = new Bishop('White');
+                break;
+            case 'wQ':
+                actualPiece = new Queen('White');
+                break;
+            case 'wK':
+                actualPiece = new King('White');
+                break;
+            case 'wP':
+                actualPiece = new Pawn('White');
+                break;
+            default:
+                actualPiece = null;
+        }
+        return actualPiece;
+    }
+
 }
 
 
@@ -254,9 +290,6 @@ class Bishop extends Piece {
     constructor(color = null) {
         super(null, color)
     }
-
-
-
 }
 
 class Tower extends Piece {
@@ -271,7 +304,7 @@ class Tower extends Piece {
         if (initialX == toX && initialY == toY) {
             return false;
         }
-        if (state[toX][toY].piece!=null && state[toX][toY].piece.color.toLowerCase() == state[initialX][initialY].piece.color.toLowerCase()) {
+        if (state[toX][toY].piece != null && state[toX][toY].piece.color.toLowerCase() == state[initialX][initialY].piece.color.toLowerCase()) {
             return false;
         }
         if (initialX == toX && initialY < toY) {
