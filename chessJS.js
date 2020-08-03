@@ -76,36 +76,8 @@ class ChessTable {
         }
     }
 
-    clickFunction(event){
-        console.log(event.srcElement);
-        return;
-        if (this.fromSquare == null) {
-            if (this.chessMatrix[i][j].piece != null) {
-                this.fromSquare = this.chessMatrix[i][j];
-                console.log(this.fromSquare + "s1");
-            }
-        }
-        else {
-            this.toSquare = this.chessMatrix[i][j];
-            console.log(this.fromSquare + "s2");
-            if (this.fromSquare.piece.legalMove(this.fromSquare.xCoord, this.fromSquare.yCoord,
-                this.toSquare.xCoord, this.toSquare.yCoord, this.chessMatrix)) {
 
-                if (this.toSquare.piece != null) {
-                    console.log('entered to remove piece in battle');
-                    console.log(this.toSquare.piece);
-                    console.log(this.toSquare.removePiece());
-                }
-                this.toSquare.setPiece(this.fromSquare.removePiece());
 
-            }
-            this.toSquare.elem.blur();
-            this.fromSquare = null;
-            this.toSquare = null;
-
-        }
-    }
-    
 
 
 
@@ -290,6 +262,68 @@ class Bishop extends Piece {
     constructor(color = null) {
         super(null, color)
     }
+
+    //     x2 – x1 = y2 – y1
+    // -x2 + x1 = y2 – y1
+
+    legalMove(initialX, initialY, toX, toY, state) {
+        return this.constructor.bishopLegalMove(initialX, initialY, toX, toY, state);
+    }
+
+    static bishopLegalMove(initialX, initialY, toX, toY, state){
+        if(initialX==toX && initialY==toY){
+            return false;
+        }
+        if (-toX + initialX == toY - initialY) {
+            if (initialX > toX) {
+                for (let i = initialX-1,  j=initialY+1; i > toX; i--, j++) { //mergem pe diagonala
+                    if (state[i][j].piece != null) {
+                        return false;
+                    }
+                }
+            }
+            else {
+
+                for (let i = toX - 1,  j=toY +1; i > initialX; i--, j++) {
+                    if (state[i][j].piece != null) {
+                        return false;
+                    }
+                }
+
+            }
+            if(state[toX][toY].piece!=null){
+                if(state[initialX][initialY].piece.color==state[toX][toY].piece.color){
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (toX - initialX == toY - initialY) {
+            if(initialX>toX){
+                for(let i=initialX-1, j=initialY-1;i>toX; i--, j--){
+                    if(state[i][j].piece!=null){
+                        return false;
+                    }
+                }
+            }
+            else{
+                for(let i=toX-1, j=toY-1; i>toX; i--, j--){
+                    if(state[i][j].piece!=null){
+                        return false;
+                    }
+                }
+            }
+            if(state[toX][toY].piece!=null){
+                if(state[initialX][initialY].piece.color==state[toX][toY].piece.color){
+                    return false;
+                }
+            }
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 }
 
 class Tower extends Piece {
@@ -298,6 +332,11 @@ class Tower extends Piece {
     }
 
     legalMove(initialX, initialY, toX, toY, state) {
+        return this.constructor.towerLegalMove(initialX, initialY, toX, toY, state)
+
+    }
+
+    static towerLegalMove(initialX, initialY, toX, toY, state){
         if (initialX != toX && initialY != toY) {
             return false;
         }
@@ -347,12 +386,53 @@ class Horse extends Piece {
     constructor(color = null) {
         super(null, color)
     }
-
+    legalMove(initialX, initialY, toX, toY, state) {
+        if ((Math.abs(initialY - toY) == 1 && Math.abs(initialX - toX) == 2) || (Math.abs(initialY - toY) == 2 && Math.abs(initialX - toX) == 1)) {
+            if (state[toX][toY].piece != null) {
+                if (state[toX][toY].piece.color != state[initialX][initialY].piece.color) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            else {
+                return true;
+            }
+        }
+        else {
+            return false;
+        }
+    }
 }
 
 class King extends Piece {
     constructor(color = null) {
         super(null, color)
+    }
+
+    legalMove(initialX, initialY, toX, toY, state){
+        if((initialX==toX && Math.abs(toY-initialY)==1) || (initialY==toY && Math.abs(toX-initialX)==1)){
+            if(state[toX][toY].piece==null){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        if(Math.abs(toX-initialX)==1 && Math.abs(toY-initialY)==1){
+            if(state[toX][toY].piece!=null){
+                if(state[toX][toY].piece.color!=state[initialX][initialY].piece.color){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            else{
+                return true;
+            }
+        }
     }
 
 }
@@ -361,6 +441,13 @@ class Queen extends Piece {
     constructor(color = null) {
         super(null, color)
     }
+
+    legalMove(initialX, initialY, toX, toY, state){
+        return Bishop.bishopLegalMove(initialX, initialY, toX, toY, state) || Tower.towerLegalMove(initialX, initialY, toX, toY, state);
+
+    }
+
+
 
 }
 
