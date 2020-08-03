@@ -1,15 +1,14 @@
-let countDownP = document.createElement('p');
-//countDownP.textContent = 'new';
-countDownP.id = 'countDownP';
+let $countDownP = $('<p></p>');
+$countDownP.attr('id','countDownP');
 
-let mainDiv = document.createElement('div');
-mainDiv.classList.add('main-div')
-
+let $mainDiv = $('<div></div>');
+$mainDiv.addClass('main-div');
 
 
-let body = document.getElementsByTagName('body')[0].appendChild(mainDiv);
-mainDiv.appendChild(countDownP);
-
+$('body').append($mainDiv);
+//let body = document.getElementsByTagName('body')[0].appendChild(mainDiv);
+//mainDiv.appendChild($countDownP);
+$mainDiv.append($countDownP);
 
 
 class ChessTable {
@@ -43,7 +42,8 @@ class ChessTable {
             for (let j = 0; j < 8; j++) {
                 this.chessMatrix[i][j] = new Square(i, j);
 
-                this.chessMatrix[i][j].elem.addEventListener('click', () => {
+                //this.chessMatrix[i][j].$elem.addEventListener('click', () => {
+                this.chessMatrix[i][j].$elem.click(()=>{
                     if (this.fromSquare == null) {
                         if (this.chessMatrix[i][j].piece != null) {
                             this.fromSquare = this.chessMatrix[i][j];
@@ -59,12 +59,12 @@ class ChessTable {
                             if (this.toSquare.piece != null) {
                                 console.log('entered to remove piece in battle');
                                 console.log(this.toSquare.piece);
-                                console.log(this.toSquare.removePiece());
+                                //console.log(this.toSquare.removePiece());
                             }
-                            this.toSquare.setPiece(this.fromSquare.removePiece());
-
+                            this.toSquare.setPiece(this.fromSquare.piece);
+                            this.fromSquare.piece=null;
                         }
-                        this.toSquare.elem.blur();
+                        this.toSquare.$elem.blur();
                         this.fromSquare = null;
                         this.toSquare = null;
 
@@ -89,20 +89,21 @@ class ChessTable {
             }
         }
     }
-
-    drawTable(container) {
-        if (container) {
-            let gridDiv = document.createElement('div');
-            gridDiv.id = "grid-div";
-            gridDiv.classList.add('grid-div');
-            container.appendChild(gridDiv);
+    
+    drawTable($container) {
+        if ($container) {
+            let $gridDiv = $('<div></div>');
+            $gridDiv.attr('id', 'grid-div');
+            $gridDiv.addClass('grid-div');
+            $container.append($gridDiv);
 
             this.createTable();
             this.addPieces();
 
             for (let i = 0; i < 8; i++) {
                 for (let j = 0; j < 8; j++) {
-                    gridDiv.appendChild(this.chessMatrix[i][j].elem);
+                    $gridDiv.append(this.chessMatrix[i][j].$elem);
+                    //gridDiv.appendChild(this.chessMatrix[i][j].elem);
                 }
             }
         }
@@ -157,40 +158,35 @@ class Timer {
 }
 
 class Square {
-    constructor(xCoord = null, yCoord = null, elem = null, piece = null) {
+    constructor(xCoord = null, yCoord = null, $elem = null, piece = null) {
         this.xCoord = xCoord;
         this.yCoord = yCoord;
         this.piece = piece;
 
-        this.elem = document.createElement('div');
+        //this.$elem = document.createElement('div');
+        this.$elem = $('<div></div>');
         if ((xCoord + yCoord) % 2 == 0) {
-            this.elem.classList.add('white-div');
+            //this.$elem.classList.add('white-div');
+            this.$elem.addClass('white-div');
         }
         else {
-            this.elem.classList.add('black-div')
+            //this.$elem.classList.add('black-div')
+            this.$elem.addClass('black-div');
         }
 
-        this.elem.tabIndex = "1";
-
+        //this.$elem.tabIndex = "1";
+        this.$elem.attr('tabindex',1);
     }
 
-    setPiece(piece) {
-        if (piece != null && piece != undefined) {
-            this.piece = piece;
-            this.elem.appendChild(piece.elem);
-            console.log(piece.elem + " " + this.xCoord + " " + this.yCoord);
+    setPiece(piece=null) {
+        this.piece=piece;
+        if(this.$elem!==null && piece!==null){
+                this.$elem.html(piece.$elem);
         }
     }
 
-    removePiece() {
-        if (this.elem.childNodes[0]) {
-            let toRemove = this.elem.removeChild(this.elem.childNodes[0]);
-            let valToRet = this.piece;
-            this.piece = null;
-            return valToRet;
-        }
-        else return null;
-    }
+    
+
 
 
 }
@@ -198,13 +194,13 @@ class Square {
 class Piece {
     static firstWhiteMove = true;
     static firstBlackMove = true;
-    constructor(elem = null, color = null) {
+    constructor($elem = null, color = null) {
         this.color = color;
-        this.elem = document.createElement('img');
-        this.elem.style.marginTop = "10px";
+        this.$elem = document.createElement('img');
+        this.$elem.style.marginTop = "10px";
         //this.elem.src = this.constructor.getImage();
-        this.elem.src = this.constructor.name.toLowerCase() + color.toLowerCase() + ".png";
-        console.log(this.elem.src);
+        this.$elem.src = this.constructor.name.toLowerCase() + color.toLowerCase() + ".png";
+        console.log(this.$elem.src);
     }
     legalMove(initialX, initialY, toX, toY, state) {
         return true;
@@ -535,8 +531,8 @@ class Pawn extends Piece {
 
 const chessTable = new ChessTable();
 
-const countdown = new Timer(1, countDownP, () => {
-    chessTable.drawTable(mainDiv)
+const countdown = new Timer(1, $countDownP, () => {
+    chessTable.drawTable($mainDiv)
 })
 
 
