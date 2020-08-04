@@ -112,6 +112,7 @@ class ChessTable {
             $gridDiv.addClass('grid-div');
             $container.append($gridDiv);
 
+            
             this.createTable();
             this.addPieces();
 
@@ -191,6 +192,7 @@ class Square {
 
         //this.$elem.tabIndex = "1";
         this.$elem.attr('tabindex', 1);
+        
     }
 
     setPiece(piece = null) {
@@ -210,11 +212,15 @@ class Piece {
 
     constructor($elem = null, color = null) {
         this.color = color;
-        this.$elem = document.createElement('img');
-        this.$elem.style.marginTop = "10px";
-        //this.elem.src = this.constructor.getImage();
-        this.$elem.src = this.constructor.name.toLowerCase() + color.toLowerCase() + ".png";
-        console.log(this.$elem.src);
+        // this.$elem = document.createElement('img');
+        // this.$elem.style.marginTop = "10px";
+        // //this.elem.src = this.constructor.getImage();
+        // this.$elem.src = this.constructor.name.toLowerCase() + color.toLowerCase() + ".png";
+        //console.log(this.$elem.src);
+
+        this.$elem = $('<img>'); //Equivalent: $(document.createElement('img'))
+        this.$elem.attr('src', this.constructor.name.toLowerCase() + color.toLowerCase() + ".png");
+        this.$elem.css('margin-top','10px');
     }
     legalMove(initialX, initialY, toX, toY, state) {
         return true;
