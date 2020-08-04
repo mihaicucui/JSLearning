@@ -44,8 +44,10 @@ class ChessTable {
             for (let j = 0; j < 8; j++) {
                 this.chessMatrix[i][j] = new Square(i, j);
 
-                //this.chessMatrix[i][j].$elem.addEventListener('click', () => {
-                this.chessMatrix[i][j].$elem.on('click',() => {
+
+
+                this.chessMatrix[i][j].$elem.on('click dragstart drop',() => {
+                    console.log(event);
                     if (this.fromSquare == null) {
                         if (this.chessMatrix[i][j].piece != null) {
                             if (this.chessMatrix[i][j].piece.color.toLowerCase() == this.turn) {
@@ -86,7 +88,9 @@ class ChessTable {
                     }
                 }
                 )
-                //this.chessMatrix[i][j].elem.addEventListener('click', this.clickFunction.bind(this));
+
+
+                // this.$chessMatrix[i][j].$ele
             }
         }
     }
@@ -107,12 +111,10 @@ class ChessTable {
 
     drawTable($container) {
         if ($container) {
-            let $gridDiv = $('<div></div>');
-            $gridDiv.attr('id', 'grid-div');
-            $gridDiv.addClass('grid-div');
+            let $gridDiv = $('<div></div>').attr('id', 'grid-div').addClass('grid-div');
             $container.append($gridDiv);
 
-            
+
             this.createTable();
             this.addPieces();
 
@@ -120,10 +122,18 @@ class ChessTable {
                 for (let j = 0; j < 8; j++) {
                     $gridDiv.append(this.chessMatrix[i][j].$elem);
                     //gridDiv.appendChild(this.chessMatrix[i][j].elem);
+
+                    // if (this.chessMatrix[i][j].piece != null) {
+                    //     this.chessMatrix[i][j].piece.$elem.on('dragstart', function (event, ui) {
+                    //         let x = 
+                    //     })
+                    // }
                 }
             }
         }
     }
+
+
 }
 
 
@@ -192,13 +202,22 @@ class Square {
 
         //this.$elem.tabIndex = "1";
         this.$elem.attr('tabindex', 1);
-        
+        this.$elem.attr('data-i', xCoord);
+        this.$elem.attr('data-j', yCoord);
+        this.$elem.droppable({
+            accept: '#draggable'
+        });
+
     }
 
     setPiece(piece = null) {
         this.piece = piece;
         if (this.$elem !== null && piece !== null) {
             this.$elem.html(piece.$elem);
+        }
+        if (this.piece != null) {
+            this.piece.$elem.attr('data-i', this.xCoord);
+            this.piece.$elem.attr('data-j', this.yCoord);
         }
     }
 
@@ -218,10 +237,16 @@ class Piece {
         // this.$elem.src = this.constructor.name.toLowerCase() + color.toLowerCase() + ".png";
         //console.log(this.$elem.src);
 
-        this.$elem = $('<img>'); //Equivalent: $(document.createElement('img'))
+        this.$elem = $('<img>').attr('id','draggable'); //Equivalent: $(document.createElement('img'))
         this.$elem.attr('src', this.constructor.name.toLowerCase() + color.toLowerCase() + ".png");
-        this.$elem.css('margin-top','10px');
-        
+        this.$elem.css('margin-top', '10px');
+        this.$elem.draggable({
+            revert: true,
+            revertDuration: 0
+        })
+
+
+
     }
     legalMove(initialX, initialY, toX, toY, state) {
         return true;
@@ -486,7 +511,7 @@ class Pawn extends Piece {
                 if (toX - initialX != -1 && toX - initialX != -2) {
                     return false;
                 }
-                if (toY != initialY && state[toX][toY].piece==null ) {
+                if (toY != initialY && state[toX][toY].piece == null) {
                     return false;
                 }
             }
@@ -521,7 +546,7 @@ class Pawn extends Piece {
                 if (toX - initialX != 1 && toX - initialX != 2) {
                     return false;
                 }
-                if (toY != initialY && state[toX][toY].piece==null) {
+                if (toY != initialY && state[toX][toY].piece == null) {
                     return false;
                 }
             }
