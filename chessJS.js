@@ -1,5 +1,5 @@
 let $countDownP = $('<p></p>');
-$countDownP.attr('id','countDownP');
+$countDownP.attr('id', 'countDownP');
 
 let $mainDiv = $('<div></div>');
 $mainDiv.addClass('main-div');
@@ -15,6 +15,7 @@ class ChessTable {
 
     fromSquare = null;
     toSquare = null;
+    turn = 'white';
     static initialState = [
         ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
         ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
@@ -25,7 +26,7 @@ class ChessTable {
         ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
         ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']];
 
-    constructor(chessMatrix = null, gridDiv = null) {
+    constructor(chessMatrix = null, gridDiv = null, turn = 'white') {
         this.chessMatrix = [];
         for (let i = 0; i < 8; i++) {
             this.chessMatrix[i] = [];
@@ -33,6 +34,7 @@ class ChessTable {
                 this.chessMatrix[i][j] = null;
             }
         }
+        this.turn = turn;
     }
 
 
@@ -43,30 +45,43 @@ class ChessTable {
                 this.chessMatrix[i][j] = new Square(i, j);
 
                 //this.chessMatrix[i][j].$elem.addEventListener('click', () => {
-                this.chessMatrix[i][j].$elem.click(()=>{
+                this.chessMatrix[i][j].$elem.click(() => {
                     if (this.fromSquare == null) {
                         if (this.chessMatrix[i][j].piece != null) {
-                            this.fromSquare = this.chessMatrix[i][j];
-                            console.log(this.fromSquare + "s1");
+                            if (this.chessMatrix[i][j].piece.color.toLowerCase() == this.turn) {
+                                this.fromSquare = this.chessMatrix[i][j];
+                                console.log(this.fromSquare + "s1");
+                            }
                         }
                     }
                     else {
-                        this.toSquare = this.chessMatrix[i][j];
-                        console.log(this.fromSquare + "s2");
-                        if (this.fromSquare.piece.legalMove(this.fromSquare.xCoord, this.fromSquare.yCoord,
-                            this.toSquare.xCoord, this.toSquare.yCoord, this.chessMatrix)) {
-
-                            if (this.toSquare.piece != null) {
-                                console.log('entered to remove piece in battle');
-                                console.log(this.toSquare.piece);
-                                //console.log(this.toSquare.removePiece());
-                            }
-                            this.toSquare.setPiece(this.fromSquare.piece);
-                            this.fromSquare.piece=null;
+                        if (this.chessMatrix[i][j].piece != null && this.fromSquare.piece.color==this.chessMatrix[i][j].piece.color){
+                            this.fromSquare=this.chessMatrix[i][j];
                         }
-                        this.toSquare.$elem.blur();
-                        this.fromSquare = null;
-                        this.toSquare = null;
+                        else {
+                            this.toSquare = this.chessMatrix[i][j];
+                            console.log(this.fromSquare + "s2");
+                            if (this.fromSquare.piece.legalMove(this.fromSquare.xCoord, this.fromSquare.yCoord,
+                                this.toSquare.xCoord, this.toSquare.yCoord, this.chessMatrix)) {
+
+                                if (this.toSquare.piece != null) {
+                                    console.log('entered to remove piece in battle');
+                                    console.log(this.toSquare.piece);
+                                    //console.log(this.toSquare.removePiece());
+                                }
+                                this.toSquare.setPiece(this.fromSquare.piece);
+                                this.fromSquare.piece = null;
+                                if (this.turn == 'white') {
+                                    this.turn = 'black';
+                                }
+                                else {
+                                    this.turn = 'white';
+                                }
+                            }
+                            this.toSquare.$elem.blur();
+                            this.fromSquare = null;
+                            this.toSquare = null;
+                        }
 
                     }
                 }
@@ -89,7 +104,7 @@ class ChessTable {
             }
         }
     }
-    
+
     drawTable($container) {
         if ($container) {
             let $gridDiv = $('<div></div>');
@@ -175,25 +190,24 @@ class Square {
         }
 
         //this.$elem.tabIndex = "1";
-        this.$elem.attr('tabindex',1);
+        this.$elem.attr('tabindex', 1);
     }
 
-    setPiece(piece=null) {
-        this.piece=piece;
-        if(this.$elem!==null && piece!==null){
-                this.$elem.html(piece.$elem);
+    setPiece(piece = null) {
+        this.piece = piece;
+        if (this.$elem !== null && piece !== null) {
+            this.$elem.html(piece.$elem);
         }
     }
 
-    
+
 
 
 
 }
 
 class Piece {
-    static firstWhiteMove = true;
-    static firstBlackMove = true;
+
     constructor($elem = null, color = null) {
         this.color = color;
         this.$elem = document.createElement('img');
@@ -266,13 +280,13 @@ class Bishop extends Piece {
         return this.constructor.bishopLegalMove(initialX, initialY, toX, toY, state);
     }
 
-    static bishopLegalMove(initialX, initialY, toX, toY, state){
-        if(initialX==toX && initialY==toY){
+    static bishopLegalMove(initialX, initialY, toX, toY, state) {
+        if (initialX == toX && initialY == toY) {
             return false;
         }
         if (-toX + initialX == toY - initialY) {
             if (initialX > toX) {
-                for (let i = initialX-1,  j=initialY+1; i > toX; i--, j++) { //mergem pe diagonala
+                for (let i = initialX - 1, j = initialY + 1; i > toX; i--, j++) { //mergem pe diagonala
                     if (state[i][j].piece != null) {
                         return false;
                     }
@@ -280,37 +294,37 @@ class Bishop extends Piece {
             }
             else {
 
-                for (let i = toX - 1,  j=toY +1; i > initialX; i--, j++) {
+                for (let i = toX - 1, j = toY + 1; i > initialX; i--, j++) {
                     if (state[i][j].piece != null) {
                         return false;
                     }
                 }
 
             }
-            if(state[toX][toY].piece!=null){
-                if(state[initialX][initialY].piece.color==state[toX][toY].piece.color){
+            if (state[toX][toY].piece != null) {
+                if (state[initialX][initialY].piece.color == state[toX][toY].piece.color) {
                     return false;
                 }
             }
             return true;
         }
         if (toX - initialX == toY - initialY) {
-            if(initialX>toX){
-                for(let i=initialX-1, j=initialY-1;i>toX; i--, j--){
-                    if(state[i][j].piece!=null){
+            if (initialX > toX) {
+                for (let i = initialX - 1, j = initialY - 1; i > toX; i--, j--) {
+                    if (state[i][j].piece != null) {
                         return false;
                     }
                 }
             }
-            else{
-                for(let i=toX-1, j=toY-1; i>toX; i--, j--){
-                    if(state[i][j].piece!=null){
+            else {
+                for (let i = toX - 1, j = toY - 1; i > toX; i--, j--) {
+                    if (state[i][j].piece != null) {
                         return false;
                     }
                 }
             }
-            if(state[toX][toY].piece!=null){
-                if(state[initialX][initialY].piece.color==state[toX][toY].piece.color){
+            if (state[toX][toY].piece != null) {
+                if (state[initialX][initialY].piece.color == state[toX][toY].piece.color) {
                     return false;
                 }
             }
@@ -332,7 +346,7 @@ class Tower extends Piece {
 
     }
 
-    static towerLegalMove(initialX, initialY, toX, toY, state){
+    static towerLegalMove(initialX, initialY, toX, toY, state) {
         if (initialX != toX && initialY != toY) {
             return false;
         }
@@ -407,25 +421,25 @@ class King extends Piece {
         super(null, color)
     }
 
-    legalMove(initialX, initialY, toX, toY, state){
-        if((initialX==toX && Math.abs(toY-initialY)==1) || (initialY==toY && Math.abs(toX-initialX)==1)){
-            if(state[toX][toY].piece==null){
+    legalMove(initialX, initialY, toX, toY, state) {
+        if ((initialX == toX && Math.abs(toY - initialY) == 1) || (initialY == toY && Math.abs(toX - initialX) == 1)) {
+            if (state[toX][toY].piece == null) {
                 return true;
             }
-            else{
+            else {
                 return false;
             }
         }
-        if(Math.abs(toX-initialX)==1 && Math.abs(toY-initialY)==1){
-            if(state[toX][toY].piece!=null){
-                if(state[toX][toY].piece.color!=state[initialX][initialY].piece.color){
+        if (Math.abs(toX - initialX) == 1 && Math.abs(toY - initialY) == 1) {
+            if (state[toX][toY].piece != null) {
+                if (state[toX][toY].piece.color != state[initialX][initialY].piece.color) {
                     return true;
                 }
-                else{
+                else {
                     return false;
                 }
             }
-            else{
+            else {
                 return true;
             }
         }
@@ -438,7 +452,7 @@ class Queen extends Piece {
         super(null, color)
     }
 
-    legalMove(initialX, initialY, toX, toY, state){
+    legalMove(initialX, initialY, toX, toY, state) {
         return Bishop.bishopLegalMove(initialX, initialY, toX, toY, state) || Tower.towerLegalMove(initialX, initialY, toX, toY, state);
 
     }
@@ -449,18 +463,23 @@ class Queen extends Piece {
 
 class Pawn extends Piece {
 
-    constructor(color = null) {
-        super(null, color)
+    firstWhiteMove;
+    firstBlackMove;
+
+    constructor(color = null, firstWhiteMove = true, firstBlackMove = true) {
+        super(null, color);
+        this.firstBlackMove = true;
+        this.firstWhiteMove = true;
     }
 
     legalMove(initialX, initialY, toX, toY, state) {
         console.log(initialX + ' ' + initialY + ' ' + toX + ' ' + toY);
         if (this.color.toLowerCase() == 'white') {
-            if (this.constructor.firstWhiteMove) {
+            if (this.firstWhiteMove) {
                 if (toX - initialX != -1 && toX - initialX != -2) {
                     return false;
                 }
-                if (toY != initialY) {
+                if (toY != initialY && state[toX][toY].piece==null ) {
                     return false;
                 }
             }
@@ -487,15 +506,15 @@ class Pawn extends Piece {
             }
 
 
-            this.constructor.firstWhiteMove = false;
+            this.firstWhiteMove = false;
             return true;
         }
         else { //black moves
-            if (this.constructor.firstBlackMove) {
+            if (this.firstBlackMove) {
                 if (toX - initialX != 1 && toX - initialX != 2) {
                     return false;
                 }
-                if (toY != initialY) {
+                if (toY != initialY && state[toX][toY].piece==null) {
                     return false;
                 }
             }
@@ -523,7 +542,7 @@ class Pawn extends Piece {
             if (toY != initialY - 1 && toY != initialY && toY != initialY + 1) {
                 return false;
             }
-            this.constructor.firstBlackMove = false;
+            this.firstBlackMove = false;
             return true;
         }
     }
