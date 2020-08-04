@@ -45,7 +45,7 @@ class ChessTable {
                 this.chessMatrix[i][j] = new Square(i, j);
 
                 //this.chessMatrix[i][j].$elem.addEventListener('click', () => {
-                this.chessMatrix[i][j].$elem.click(() => {
+                this.chessMatrix[i][j].$elem.on('click',() => {
                     if (this.fromSquare == null) {
                         if (this.chessMatrix[i][j].piece != null) {
                             if (this.chessMatrix[i][j].piece.color.toLowerCase() == this.turn) {
@@ -221,6 +221,7 @@ class Piece {
         this.$elem = $('<img>'); //Equivalent: $(document.createElement('img'))
         this.$elem.attr('src', this.constructor.name.toLowerCase() + color.toLowerCase() + ".png");
         this.$elem.css('margin-top','10px');
+        
     }
     legalMove(initialX, initialY, toX, toY, state) {
         return true;
