@@ -4,6 +4,48 @@ $countDownP.attr('id', 'countDownP');
 let $mainDiv = $('<div></div>');
 $mainDiv.addClass('main-div');
 
+const $gameBtn = $('<input type="button" value="Create a game" />');
+$gameBtn.appendTo($mainDiv);
+$gameBtn.css('margin', '20px');
+
+$gameBtn.click(()=>{
+    $.ajax({
+        method: "POST",
+        url: "https://chess.thrive-dev.bitstoneint.com/wp-json/chess-api/game",
+        data: {
+            
+            name: "try-to-post"
+
+        }
+    })
+});
+
+const $paragraph = $('<p>initial Text</p>');
+$paragraph.appendTo($mainDiv);
+$paragraph.attr('id', 'jokeP');
+$paragraph.css('margin', '15px');
+$paragraph.css('background-color', 'gray');
+$paragraph.css('color', 'white');
+
+
+const $btn = $('<input type="button" value="Start a new Game" />');
+$btn.appendTo($mainDiv);
+$btn.css('margin', '20px');
+
+$btn.click(() => {
+    $.ajax({
+        method: "GET",
+        url: "https://sv443.net/jokeapi/v2/joke/Any",
+        data: {
+            type: "single"
+        }
+    }).done(function (data) {
+
+        $paragraph.text(data.joke);
+    });
+
+});
+
 
 $('body').append($mainDiv);
 //let body = document.getElementsByTagName('body')[0].appendChild(mainDiv);
@@ -38,76 +80,117 @@ class ChessTable {
     }
 
 
+    startDragHandler(event) {
+        console.log(event.target);
+        let i = $(event.target).attr('data-i');
+        let j = $(event.target).attr('data-j');
+        this.fromSquare = this.chessMatrix[i][j];
+    }
+
+    dropHandler(event) {
+        let i = $(event.target).attr('data-i');
+        let j = $(event.target).attr('data-j');
+        this.toSquare = this.chessMatrix[i][j];
+
+        if (this.fromSquare.piece.legalMove(this.fromSquare.xCoord, this.fromSquare.yCoord,
+            this.toSquare.xCoord, this.toSquare.yCoord, this.chessMatrix)) {
+
+            $(this.fromSquare.piece.$elem).attr('data-i', this.toSquare.xCoord);
+            $(this.fromSquare.piece.$elem).attr('data-i', this.toSquare.yCoord);
+
+            
+            this.toSquare.setPiece(this.fromSquare.piece);
+            this.fromSquare.piece = null;
+            $.ajax({
+                method: "POST",
+                url: "https://chess.thrive-dev.bitstoneint.com/wp-json/chess-api/game",
+                data: {
+                    
+                    
+        
+                }
+            })
+
+            //this.changeTurn();
+        }
+
+        this.toSquare.$elem.blur();
+        this.fromSquare = null;
+        this.toSquare = null;
+
+    }
+
 
     createTable() {
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
                 this.chessMatrix[i][j] = new Square(i, j);
 
+                this.chessMatrix[i][j].$elem.on('dragstart', (event) => {
+                    this.startDragHandler(event);
+                })
+
+                this.chessMatrix[i][j].$elem.on('drop', (event) => {
+                    this.dropHandler(event);
+                })
 
 
-                this.chessMatrix[i][j].$elem.on('click dragstart drop',() => {
-                    console.log(event);
-                    if (this.fromSquare == null) {
-                        if (this.chessMatrix[i][j].piece != null) {
-                            if (this.chessMatrix[i][j].piece.color.toLowerCase() == this.turn) {
-                                this.fromSquare = this.chessMatrix[i][j];
-                                console.log(this.fromSquare + "s1");
-                            }
-                        }
-                    }
-                    else {
-                        if (this.chessMatrix[i][j].piece != null && this.fromSquare.piece.color==this.chessMatrix[i][j].piece.color){
-                            this.fromSquare=this.chessMatrix[i][j];
-                        }
-                        else {
-                            this.toSquare = this.chessMatrix[i][j];
-                            console.log(this.fromSquare + "s2");
-                            if (this.fromSquare.piece.legalMove(this.fromSquare.xCoord, this.fromSquare.yCoord,
-                                this.toSquare.xCoord, this.toSquare.yCoord, this.chessMatrix)) {
-
-                                if (this.toSquare.piece != null) {
-                                    console.log('entered to remove piece in battle');
-                                    console.log(this.toSquare.piece);
-                                    //console.log(this.toSquare.removePiece());
-                                }
-                                this.toSquare.setPiece(this.fromSquare.piece);
-                                this.fromSquare.piece = null;
-                                if (this.turn == 'white') {
-                                    this.turn = 'black';
-                                }
-                                else {
-                                    this.turn = 'white';
-                                }
-                            }
-                            this.toSquare.$elem.blur();
-                            this.fromSquare = null;
-                            this.toSquare = null;
-                        }
-
-                    }
-                }
-                )
-
-
-                // this.$chessMatrix[i][j].$ele
             }
         }
     }
-
-
-
 
 
 
     addPieces() {
+        this.whitePieces = [];
+        this.blackPieces = [];
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
                 let actualPiece = Piece.createPiece(ChessTable.initialState[i][j]);
                 this.chessMatrix[i][j].setPiece(actualPiece);
+
+                if (actualPiece != null) {
+                    if (i < 2) {
+                        this.blackPieces.push(actualPiece);
+                    }
+                    else {
+                        this.whitePieces.push(actualPiece);
+                    }
+                }
             }
         }
+        console.log(this.whitePieces);
     }
+
+    changeTurn() {
+        this.whitePieces.forEach(piece=>console.log(piece.$elem))
+        console.log(this.blackPieces);
+        if (this.turn == 'white') {
+
+            this.whitePieces.forEach(piece => {
+                if (piece.$elem)
+                    piece.$elem.draggable("option", "disabled", true)
+            });
+            this.blackPieces.forEach(piece => {
+                if (piece.$elem)
+                    piece.$elem.draggable('enable')
+            });
+            this.turn = 'black';
+        }
+        else {
+            this.whitePieces.forEach(piece => {
+                if (piece.$elem)
+                    piece.$elem.draggable('enable')
+            });
+            this.blackPieces.forEach(piece => {
+                if (piece.$elem)
+                    piece.$elem.draggable("option", "disabled", true)
+            });
+        }
+
+        this.turn = 'white';
+    }
+
 
     drawTable($container) {
         if ($container) {
@@ -121,13 +204,7 @@ class ChessTable {
             for (let i = 0; i < 8; i++) {
                 for (let j = 0; j < 8; j++) {
                     $gridDiv.append(this.chessMatrix[i][j].$elem);
-                    //gridDiv.appendChild(this.chessMatrix[i][j].elem);
 
-                    // if (this.chessMatrix[i][j].piece != null) {
-                    //     this.chessMatrix[i][j].piece.$elem.on('dragstart', function (event, ui) {
-                    //         let x = 
-                    //     })
-                    // }
                 }
             }
         }
@@ -237,12 +314,12 @@ class Piece {
         // this.$elem.src = this.constructor.name.toLowerCase() + color.toLowerCase() + ".png";
         //console.log(this.$elem.src);
 
-        this.$elem = $('<img>').attr('id','draggable'); //Equivalent: $(document.createElement('img'))
+        this.$elem = $('<img>').attr('id', 'draggable'); //Equivalent: $(document.createElement('img'))
         this.$elem.attr('src', this.constructor.name.toLowerCase() + color.toLowerCase() + ".png");
         this.$elem.css('margin-top', '10px');
         this.$elem.draggable({
             revert: true,
-            revertDuration: 0
+            revertDuration: 0.1
         })
 
 
@@ -304,9 +381,6 @@ class Bishop extends Piece {
     constructor(color = null) {
         super(null, color)
     }
-
-    //     x2 – x1 = y2 – y1
-    // -x2 + x1 = y2 – y1
 
     legalMove(initialX, initialY, toX, toY, state) {
         return this.constructor.bishopLegalMove(initialX, initialY, toX, toY, state);

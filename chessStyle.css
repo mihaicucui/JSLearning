@@ -5,7 +5,7 @@
     background-color: rosybrown;
 }
 
-.main-div p{
+.main-div #countDownP{
     position: relative;
     top: 50%;
     bottom: 50%;
@@ -45,7 +45,7 @@
 }
 
 .grid-div{
-    margin: 0;
+    margin: 10px;
     position: absolute;
     top: 50%;
     left: 50%;
