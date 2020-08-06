@@ -56,6 +56,8 @@
     justify-content: center;
     grid-template-columns: auto auto auto auto auto auto auto auto;
     grid-gap: 0px;
+    box-shadow: 10px 10px 5px #575555;
+    border: 1px solid black;
   }
 
 .white-piece{
@@ -65,4 +67,39 @@
 .black-piece{
     
 }
+
+.row{
+    display: flex;
+}
+
+.column{
+    flex: 50%;
+    background-color: rosybrown;
+    display: block;
+}
+
+.button {
+    background-color: #561e8b;
+    border: none;
+    color: white;
+    padding: 30px 32px;
+    text-align: center;
+    font-size: 16px;
+    opacity: 0.6;
+    transition: 0.3s;
+    display: inline-block;
+    text-decoration: none;
+    cursor: pointer;
+    margin-left:50px;
+    margin-top:50px;
+  }
+
+  
+  
+  .button:hover {opacity: 1}
+
+  .input-style{
+    margin-left:50px;
+    /* margin-top:50px; */
+  }
 

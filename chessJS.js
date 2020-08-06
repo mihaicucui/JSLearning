@@ -23,37 +23,21 @@ $mainDiv.addClass('main-div');
 
 
 
-const $paragraph = $('<p>initial Text</p>');
-$paragraph.appendTo($mainDiv);
-$paragraph.attr('id', 'jokeP');
-$paragraph.css('margin', '15px');
-$paragraph.css('background-color', 'gray');
-$paragraph.css('color', 'white');
+// const $paragraph = $('<p>initial Text</p>');
+// $paragraph.appendTo($mainDiv);
+// $paragraph.attr('id', 'jokeP');
+// $paragraph.css('margin', '15px');
+// $paragraph.css('background-color', 'gray');
+// $paragraph.css('color', 'white');
 
 
-const $btn = $('<input type="button" value="Start a new Game" />');
-$btn.appendTo($mainDiv);
-$btn.css('margin', '20px');
-
-$btn.click(() => {
-    $.ajax({
-        method: "GET",
-        url: "https://sv443.net/jokeapi/v2/joke/Any",
-        data: {
-            type: "single"
-        }
-    }).done(function (data) {
-
-        $paragraph.text(data.joke);
-    });
-
-});
 
 
-$('body').append($mainDiv);
-//let body = document.getElementsByTagName('body')[0].appendChild(mainDiv);
-//mainDiv.appendChild($countDownP);
-$mainDiv.append($countDownP);
+
+
+//$('body').append($mainDiv);
+
+$('#row').append($mainDiv);
 
 
 
@@ -142,6 +126,8 @@ class ChessTable {
                     this.dropHandler(event);
                 })
 
+                
+
 
             }
         }
@@ -169,34 +155,34 @@ class ChessTable {
         console.log(this.whitePieces);
     }
 
-    changeTurn() {
-        this.whitePieces.forEach(piece => console.log(piece.$elem))
-        console.log(this.blackPieces);
-        if (this.turn == 'white') {
+    // changeTurn() {
+    //     this.whitePieces.forEach(piece => console.log(piece.$elem))
+    //     console.log(this.blackPieces);
+    //     if (this.turn == 'white') {
 
-            this.whitePieces.forEach(piece => {
-                if (piece.$elem)
-                    piece.$elem.draggable("option", "disabled", true)
-            });
-            this.blackPieces.forEach(piece => {
-                if (piece.$elem)
-                    piece.$elem.draggable('enable')
-            });
-            this.turn = 'black';
-        }
-        else {
-            this.whitePieces.forEach(piece => {
-                if (piece.$elem)
-                    piece.$elem.draggable('enable')
-            });
-            this.blackPieces.forEach(piece => {
-                if (piece.$elem)
-                    piece.$elem.draggable("option", "disabled", true)
-            });
-        }
+    //         this.whitePieces.forEach(piece => {
+    //             if (piece.$elem)
+    //                 piece.$elem.draggable("option", "disabled", true)
+    //         });
+    //         this.blackPieces.forEach(piece => {
+    //             if (piece.$elem)
+    //                 piece.$elem.draggable('enable')
+    //         });
+    //         this.turn = 'black';
+    //     }
+    //     else {
+    //         this.whitePieces.forEach(piece => {
+    //             if (piece.$elem)
+    //                 piece.$elem.draggable('enable')
+    //         });
+    //         this.blackPieces.forEach(piece => {
+    //             if (piece.$elem)
+    //                 piece.$elem.draggable("option", "disabled", true)
+    //         });
+    //     }
 
-        this.turn = 'white';
-    }
+    //     this.turn = 'white';
+    // }
 
 
     drawTable($container) {
@@ -233,11 +219,11 @@ class ChessTable {
     moveAPiece(fromX, fromY, toX, toY) {
         console.log("MOVED FROM" + fromX + fromY + toX + toY);
         let fromSquare = this.chessMatrix[fromX][fromY];
-        if(fromSquare.piece){
-        let actualPiece = fromSquare.piece;
-        let toSquare = this.chessMatrix[toX][toY];
-        toSquare.setPiece(actualPiece);
-        fromSquare.piece = null;
+        if (fromSquare.piece) {
+            let actualPiece = fromSquare.piece;
+            let toSquare = this.chessMatrix[toX][toY];
+            toSquare.setPiece(actualPiece);
+            fromSquare.piece = null;
         }
     }
 
@@ -260,21 +246,34 @@ class Game {
                 name: gameName
             }
 
-        }).done(function (data) {
-            alert(data.ID);
+        }).done((data) => {
+            this.gameID = data.ID;
+            this.resetAGame(this.gameID);
+            this.getAGameMoves(data.ID);
         })
     }
 
     resetAGame(gameID) {
         $.ajax({
             method: 'POST',
-            url: "https://chess.thrive-dev.bitstoneint.com/wp-json/chess-api/game/" + gameID,
+            url: "https://chess.thrive-dev.bitstoneint.com/wp-json/chess-api/game/" + this.gameID,
             data: {
                 reset: 1
             }
 
-        }).done(function (data) {
-            alert(data.ID);
+        }).done(() => {
+            // console.log('entered to reset'+this.gameID);
+            // this.chessTable = new ChessTable(this.gameID);
+            // $('#grid-div').remove();
+            // this.chessTable.drawTable($mainDiv);
+            // this.gameMoves=[];
+
+        }).always(() => {
+            console.log('entered to reset' + this.gameID);
+            this.chessTable = new ChessTable(this.gameID);
+            $('#grid-div').remove();
+            this.chessTable.drawTable($mainDiv);
+            this.gameMoves = [];
         })
     }
 
@@ -287,11 +286,21 @@ class Game {
 
             }
         }).done((data) => {
+
+
             // for(let i=0;i<data.moves.length; i++){
             //     this.chessTable.moveAPiece(data.moves[i].from.x, data.moves[i].from.y, data.moves[i].to.x, data.moves[i].to.y);
             // }
-            if(data.moves.length%2==0){
-                
+            $("#gamePId").text('In game: ' + gameID)
+            let whites = $(".white-piece");
+            let blacks = $(".black-piece");
+            if (data.moves.length % 2 == 0) {
+                blacks.draggable("option", "disabled", true);
+                whites.draggable("enable");
+            }
+            else {
+                whites.draggable("option", "disabled", true);
+                blacks.draggable("enable");
             }
             if (dragging == false) {
                 if (data.moves.length > this.gameMoves.length) {
@@ -769,18 +778,38 @@ game.chessTable.drawTable($mainDiv);
 
 
 setInterval(function () {
-    game.getAGameMoves('157');
+    game.getAGameMoves(game.gameID);
+    console.log(game.gameID);
 }, 1000);
 
-const $resetGame = $('<input type="button" value="Reset the game" />');
-$resetGame.appendTo($mainDiv);
-$resetGame.css('margin', '20px');
+const $resetGame = $('<input type="button" value="Reset game" />');
+$resetGame.appendTo("#buttons-div");
+$resetGame.css('margin-left', '50px');
+$resetGame.addClass('button')
 $resetGame.click(() => {
-    game.resetAGame(157);
+    console.log('clicked reset' + game.gameID);
+
+    game.resetAGame(game.gameID);
+    // game.chessTable = new ChessTable(game.gameID);
+    // $('#grid-div').remove();
+    // game.chessTable.drawTable($mainDiv);
+});
+
+const $createGame = $('#createGame');
+$createGame.click(() => {
+    game.createAGame('random');
+})
+
+const $input1 = $('#input1');
+const $getAGame = $('#getAGame');
+$getAGame.click(() => {
+    game.gameID = $input1.val();
     game.chessTable = new ChessTable(game.gameID);
     $('#grid-div').remove();
     game.chessTable.drawTable($mainDiv);
-});
+    game.gameMoves = [];
+})
+
 
 
 
