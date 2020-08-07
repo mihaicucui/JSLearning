@@ -652,6 +652,9 @@ class Pawn extends Piece {
                 }
             }
 
+            if (toY != initialY - 1 && toY != initialY && toY != initialY + 1) {
+                return false;
+            }
 
             this.firstWhiteMove = false;
             return true;
