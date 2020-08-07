@@ -73,7 +73,7 @@
 }
 
 .column{
-    flex: 50%;
+    flex: 20%;
     background-color: rosybrown;
     display: block;
 }
@@ -101,5 +101,9 @@
   .input-style{
     margin-left:50px;
     /* margin-top:50px; */
+  }
+
+  body{
+      background-color: rosybrown;
   }
 

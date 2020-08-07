@@ -4,39 +4,6 @@ $countDownP.attr('id', 'countDownP');
 let $mainDiv = $('<div></div>');
 $mainDiv.addClass('main-div');
 
-// const $gameBtn = $('<input type="button" value="Create a game" />');
-// $gameBtn.appendTo($mainDiv);
-// $gameBtn.css('margin', '20px');
-
-// $gameBtn.click(() => {
-//     $.ajax({
-//         method: "POST",
-//         url: "https://chess.thrive-dev.bitstoneint.com/wp-json/chess-api/game",
-//         data: {
-
-//             name: "try-to-post"
-
-//         }
-//     })
-// });
-
-
-
-
-// const $paragraph = $('<p>initial Text</p>');
-// $paragraph.appendTo($mainDiv);
-// $paragraph.attr('id', 'jokeP');
-// $paragraph.css('margin', '15px');
-// $paragraph.css('background-color', 'gray');
-// $paragraph.css('color', 'white');
-
-
-
-
-
-
-//$('body').append($mainDiv);
-
 $('#row').append($mainDiv);
 
 
@@ -101,8 +68,6 @@ class ChessTable {
             this.sendAMove(this.fromSquare.xCoord, this.fromSquare.yCoord, this.toSquare.xCoord, this.toSquare.yCoord);
             console.log('movesent' + this.fromSquare.xCoord + ' ' + this.fromSquare.yCoord + ' ' + this.toSquare.xCoord + ' ' + this.toSquare.yCoord)
 
-
-            //this.changeTurn();
         }
 
         this.toSquare.$elem.blur();
@@ -155,35 +120,6 @@ class ChessTable {
         console.log(this.whitePieces);
     }
 
-    // changeTurn() {
-    //     this.whitePieces.forEach(piece => console.log(piece.$elem))
-    //     console.log(this.blackPieces);
-    //     if (this.turn == 'white') {
-
-    //         this.whitePieces.forEach(piece => {
-    //             if (piece.$elem)
-    //                 piece.$elem.draggable("option", "disabled", true)
-    //         });
-    //         this.blackPieces.forEach(piece => {
-    //             if (piece.$elem)
-    //                 piece.$elem.draggable('enable')
-    //         });
-    //         this.turn = 'black';
-    //     }
-    //     else {
-    //         this.whitePieces.forEach(piece => {
-    //             if (piece.$elem)
-    //                 piece.$elem.draggable('enable')
-    //         });
-    //         this.blackPieces.forEach(piece => {
-    //             if (piece.$elem)
-    //                 piece.$elem.draggable("option", "disabled", true)
-    //         });
-    //     }
-
-    //     this.turn = 'white';
-    // }
-
 
     drawTable($container) {
         if ($container) {
@@ -212,7 +148,7 @@ class ChessTable {
                 move: { from: { x: fromX, y: fromY }, to: { x: toX, y: toY } }
             }
         }).done(function (data) {
-            //alert(data.moves);
+
         })
     }
 
@@ -262,11 +198,6 @@ class Game {
             }
 
         }).done(() => {
-            // console.log('entered to reset'+this.gameID);
-            // this.chessTable = new ChessTable(this.gameID);
-            // $('#grid-div').remove();
-            // this.chessTable.drawTable($mainDiv);
-            // this.gameMoves=[];
 
         }).always(() => {
             console.log('entered to reset' + this.gameID);
