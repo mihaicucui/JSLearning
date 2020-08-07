@@ -4,11 +4,44 @@ $countDownP.attr('id', 'countDownP');
 let $mainDiv = $('<div></div>');
 $mainDiv.addClass('main-div');
 
+// const $gameBtn = $('<input type="button" value="Create a game" />');
+// $gameBtn.appendTo($mainDiv);
+// $gameBtn.css('margin', '20px');
 
-$('body').append($mainDiv);
-//let body = document.getElementsByTagName('body')[0].appendChild(mainDiv);
-//mainDiv.appendChild($countDownP);
-$mainDiv.append($countDownP);
+// $gameBtn.click(() => {
+//     $.ajax({
+//         method: "POST",
+//         url: "https://chess.thrive-dev.bitstoneint.com/wp-json/chess-api/game",
+//         data: {
+
+//             name: "try-to-post"
+
+//         }
+//     })
+// });
+
+
+
+
+// const $paragraph = $('<p>initial Text</p>');
+// $paragraph.appendTo($mainDiv);
+// $paragraph.attr('id', 'jokeP');
+// $paragraph.css('margin', '15px');
+// $paragraph.css('background-color', 'gray');
+// $paragraph.css('color', 'white');
+
+
+
+
+
+
+//$('body').append($mainDiv);
+
+$('#row').append($mainDiv);
+
+
+
+let dragging = false;
 
 
 class ChessTable {
@@ -16,6 +49,8 @@ class ChessTable {
     fromSquare = null;
     toSquare = null;
     turn = 'white';
+
+
     static initialState = [
         ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
         ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
@@ -26,7 +61,7 @@ class ChessTable {
         ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
         ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']];
 
-    constructor(chessMatrix = null, gridDiv = null, turn = 'white') {
+    constructor(gameID = null, chessMatrix = null, gridDiv = null, turn = 'white') {
         this.chessMatrix = [];
         for (let i = 0; i < 8; i++) {
             this.chessMatrix[i] = [];
@@ -35,8 +70,47 @@ class ChessTable {
             }
         }
         this.turn = turn;
+        this.gameID = gameID;
     }
 
+
+    startDragHandler(event) {
+        dragging = true;
+        console.log(event.target);
+        let i = $(event.target).attr('data-i');
+        let j = $(event.target).attr('data-j');
+        this.fromSquare = this.chessMatrix[i][j];
+    }
+
+    dropHandler(event) {
+        let i = $(event.target).attr('data-i');
+        let j = $(event.target).attr('data-j');
+        this.toSquare = this.chessMatrix[i][j];
+
+        if (this.fromSquare.piece.legalMove(this.fromSquare.xCoord, this.fromSquare.yCoord,
+            this.toSquare.xCoord, this.toSquare.yCoord, this.chessMatrix)) {
+            console.log('verify piece at' + this.toSquare.xCoord + ' ' + this.toSquare.yCoord)
+
+            $(this.fromSquare.piece.$elem).attr('data-i', this.toSquare.xCoord);
+            $(this.fromSquare.piece.$elem).attr('data-j', this.toSquare.yCoord);
+
+
+            this.toSquare.setPiece(this.fromSquare.piece);
+            this.fromSquare.piece = null;
+
+            this.sendAMove(this.fromSquare.xCoord, this.fromSquare.yCoord, this.toSquare.xCoord, this.toSquare.yCoord);
+            console.log('movesent' + this.fromSquare.xCoord + ' ' + this.fromSquare.yCoord + ' ' + this.toSquare.xCoord + ' ' + this.toSquare.yCoord)
+
+
+            //this.changeTurn();
+        }
+
+        this.toSquare.$elem.blur();
+        this.fromSquare = null;
+        this.toSquare = null;
+        dragging = false;
+
+    }
 
 
     createTable() {
@@ -44,87 +118,213 @@ class ChessTable {
             for (let j = 0; j < 8; j++) {
                 this.chessMatrix[i][j] = new Square(i, j);
 
-                //this.chessMatrix[i][j].$elem.addEventListener('click', () => {
-                this.chessMatrix[i][j].$elem.on('click',() => {
-                    if (this.fromSquare == null) {
-                        if (this.chessMatrix[i][j].piece != null) {
-                            if (this.chessMatrix[i][j].piece.color.toLowerCase() == this.turn) {
-                                this.fromSquare = this.chessMatrix[i][j];
-                                console.log(this.fromSquare + "s1");
-                            }
-                        }
-                    }
-                    else {
-                        if (this.chessMatrix[i][j].piece != null && this.fromSquare.piece.color==this.chessMatrix[i][j].piece.color){
-                            this.fromSquare=this.chessMatrix[i][j];
-                        }
-                        else {
-                            this.toSquare = this.chessMatrix[i][j];
-                            console.log(this.fromSquare + "s2");
-                            if (this.fromSquare.piece.legalMove(this.fromSquare.xCoord, this.fromSquare.yCoord,
-                                this.toSquare.xCoord, this.toSquare.yCoord, this.chessMatrix)) {
+                this.chessMatrix[i][j].$elem.on('dragstart', (event) => {
+                    this.startDragHandler(event);
+                })
 
-                                if (this.toSquare.piece != null) {
-                                    console.log('entered to remove piece in battle');
-                                    console.log(this.toSquare.piece);
-                                    //console.log(this.toSquare.removePiece());
-                                }
-                                this.toSquare.setPiece(this.fromSquare.piece);
-                                this.fromSquare.piece = null;
-                                if (this.turn == 'white') {
-                                    this.turn = 'black';
-                                }
-                                else {
-                                    this.turn = 'white';
-                                }
-                            }
-                            this.toSquare.$elem.blur();
-                            this.fromSquare = null;
-                            this.toSquare = null;
-                        }
+                this.chessMatrix[i][j].$elem.on('drop', (event) => {
+                    this.dropHandler(event);
+                })
 
-                    }
-                }
-                )
-                //this.chessMatrix[i][j].elem.addEventListener('click', this.clickFunction.bind(this));
+                
+
+
             }
         }
     }
-
-
-
 
 
 
     addPieces() {
+
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
                 let actualPiece = Piece.createPiece(ChessTable.initialState[i][j]);
                 this.chessMatrix[i][j].setPiece(actualPiece);
+
+                if (actualPiece != null) {
+                    if (i < 2) {
+                        actualPiece.$elem.addClass('black-piece')
+                    }
+                    else {
+                        actualPiece.$elem.addClass('white-piece');
+                    }
+                }
             }
         }
+        console.log(this.whitePieces);
     }
+
+    // changeTurn() {
+    //     this.whitePieces.forEach(piece => console.log(piece.$elem))
+    //     console.log(this.blackPieces);
+    //     if (this.turn == 'white') {
+
+    //         this.whitePieces.forEach(piece => {
+    //             if (piece.$elem)
+    //                 piece.$elem.draggable("option", "disabled", true)
+    //         });
+    //         this.blackPieces.forEach(piece => {
+    //             if (piece.$elem)
+    //                 piece.$elem.draggable('enable')
+    //         });
+    //         this.turn = 'black';
+    //     }
+    //     else {
+    //         this.whitePieces.forEach(piece => {
+    //             if (piece.$elem)
+    //                 piece.$elem.draggable('enable')
+    //         });
+    //         this.blackPieces.forEach(piece => {
+    //             if (piece.$elem)
+    //                 piece.$elem.draggable("option", "disabled", true)
+    //         });
+    //     }
+
+    //     this.turn = 'white';
+    // }
+
 
     drawTable($container) {
         if ($container) {
-            let $gridDiv = $('<div></div>');
-            $gridDiv.attr('id', 'grid-div');
-            $gridDiv.addClass('grid-div');
+            let $gridDiv = $('<div></div>').attr('id', 'grid-div').addClass('grid-div');
             $container.append($gridDiv);
 
-            
+
             this.createTable();
             this.addPieces();
 
             for (let i = 0; i < 8; i++) {
                 for (let j = 0; j < 8; j++) {
                     $gridDiv.append(this.chessMatrix[i][j].$elem);
-                    //gridDiv.appendChild(this.chessMatrix[i][j].elem);
+
                 }
             }
         }
     }
+
+    sendAMove(fromX, fromY, toX, toY, color = null, type = null, next = null) {
+        console.log('id game:' + this.gameID)
+        $.ajax({
+            method: 'POST',
+            url: 'https://chess.thrive-dev.bitstoneint.com/wp-json/chess-api/game/' + this.gameID,
+            data: {
+                move: { from: { x: fromX, y: fromY }, to: { x: toX, y: toY } }
+            }
+        }).done(function (data) {
+            //alert(data.moves);
+        })
+    }
+
+    moveAPiece(fromX, fromY, toX, toY) {
+        console.log("MOVED FROM" + fromX + fromY + toX + toY);
+        let fromSquare = this.chessMatrix[fromX][fromY];
+        if (fromSquare.piece) {
+            let actualPiece = fromSquare.piece;
+            let toSquare = this.chessMatrix[toX][toY];
+            toSquare.setPiece(actualPiece);
+            fromSquare.piece = null;
+        }
+    }
+
+
 }
+
+
+class Game {
+    constructor(gameID = null, timer = null) {
+        this.chessTable = new ChessTable(gameID);
+        this.gameID = gameID;
+        this.gameMoves = [];
+    }
+
+    createAGame(gameName) {
+        $.ajax({
+            method: 'POST',
+            url: "https://chess.thrive-dev.bitstoneint.com/wp-json/chess-api/game",
+            data: {
+                name: gameName
+            }
+
+        }).done((data) => {
+            this.gameID = data.ID;
+            this.resetAGame(this.gameID);
+            this.getAGameMoves(data.ID);
+        })
+    }
+
+    resetAGame(gameID) {
+        $.ajax({
+            method: 'POST',
+            url: "https://chess.thrive-dev.bitstoneint.com/wp-json/chess-api/game/" + this.gameID,
+            data: {
+                reset: 1
+            }
+
+        }).done(() => {
+            // console.log('entered to reset'+this.gameID);
+            // this.chessTable = new ChessTable(this.gameID);
+            // $('#grid-div').remove();
+            // this.chessTable.drawTable($mainDiv);
+            // this.gameMoves=[];
+
+        }).always(() => {
+            console.log('entered to reset' + this.gameID);
+            this.chessTable = new ChessTable(this.gameID);
+            $('#grid-div').remove();
+            this.chessTable.drawTable($mainDiv);
+            this.gameMoves = [];
+        })
+    }
+
+
+    getAGameMoves(gameID) {
+        console.log($.ajax({
+            method: 'GET',
+            url: "https://chess.thrive-dev.bitstoneint.com/wp-json/chess-api/game/" + gameID,
+            data: {
+
+            }
+        }).done((data) => {
+
+
+            // for(let i=0;i<data.moves.length; i++){
+            //     this.chessTable.moveAPiece(data.moves[i].from.x, data.moves[i].from.y, data.moves[i].to.x, data.moves[i].to.y);
+            // }
+            $("#gamePId").text('In game: ' + gameID)
+            let whites = $(".white-piece");
+            let blacks = $(".black-piece");
+            if (data.moves.length % 2 == 0) {
+                blacks.draggable("option", "disabled", true);
+                whites.draggable("enable");
+            }
+            else {
+                whites.draggable("option", "disabled", true);
+                blacks.draggable("enable");
+            }
+            if (dragging == false) {
+                if (data.moves.length > this.gameMoves.length) {
+                    console.log('MOVES COMPARISON' + data.moves.length + ' ' + this.gameMoves.length)
+                    let newLength = data.moves.length;
+                    let oldLength = this.gameMoves.length;
+
+                    for (let i = oldLength; i < newLength; i++) {
+                        let fromX = data.moves[i].from.x;
+                        let fromY = data.moves[i].from.y;
+                        let toX = data.moves[i].to.x;
+                        let toY = data.moves[i].to.y;
+
+                        this.chessTable.moveAPiece(fromX, fromY, toX, toY);
+                        this.gameMoves.push({ from: { x: fromX, y: fromY }, to: { x: toX, y: toY } })
+                    }
+                }
+            }
+        }))
+    }
+
+}
+
+
 
 
 
@@ -153,6 +353,7 @@ class Timer {
         console.log(this.seconds);
     }
     start() {
+        console.log('here')
         const countdown = setInterval(() => {
             if (this.getSeconds() === 0) {
                 clearInterval(countdown);
@@ -165,7 +366,8 @@ class Timer {
                     this.endCallback();
                 }
             } else {
-                this.paragraph.textContent = this.seconds;
+                if (this.paragraph != null)
+                    this.paragraph.textContent = this.seconds;
                 this.decrement();
             }
         }, 1000);
@@ -192,13 +394,22 @@ class Square {
 
         //this.$elem.tabIndex = "1";
         this.$elem.attr('tabindex', 1);
-        
+        this.$elem.attr('data-i', xCoord);
+        this.$elem.attr('data-j', yCoord);
+        this.$elem.droppable({
+            accept: '#draggable'
+        });
+
     }
 
     setPiece(piece = null) {
         this.piece = piece;
         if (this.$elem !== null && piece !== null) {
             this.$elem.html(piece.$elem);
+        }
+        if (this.piece != null) {
+            this.piece.$elem.attr('data-i', this.xCoord);
+            this.piece.$elem.attr('data-j', this.yCoord);
         }
     }
 
@@ -212,16 +423,16 @@ class Piece {
 
     constructor($elem = null, color = null) {
         this.color = color;
-        // this.$elem = document.createElement('img');
-        // this.$elem.style.marginTop = "10px";
-        // //this.elem.src = this.constructor.getImage();
-        // this.$elem.src = this.constructor.name.toLowerCase() + color.toLowerCase() + ".png";
-        //console.log(this.$elem.src);
-
-        this.$elem = $('<img>'); //Equivalent: $(document.createElement('img'))
+        this.$elem = $('<img>').attr('id', 'draggable'); //Equivalent: $(document.createElement('img'))
         this.$elem.attr('src', this.constructor.name.toLowerCase() + color.toLowerCase() + ".png");
-        this.$elem.css('margin-top','10px');
-        
+        this.$elem.css('margin-top', '10px');
+        this.$elem.draggable({
+            revert: true,
+            revertDuration: 0.1
+        })
+
+
+
     }
     legalMove(initialX, initialY, toX, toY, state) {
         return true;
@@ -279,9 +490,6 @@ class Bishop extends Piece {
     constructor(color = null) {
         super(null, color)
     }
-
-    //     x2 – x1 = y2 – y1
-    // -x2 + x1 = y2 – y1
 
     legalMove(initialX, initialY, toX, toY, state) {
         return this.constructor.bishopLegalMove(initialX, initialY, toX, toY, state);
@@ -460,6 +668,7 @@ class Queen extends Piece {
     }
 
     legalMove(initialX, initialY, toX, toY, state) {
+        console.log('entered in queen if');
         return Bishop.bishopLegalMove(initialX, initialY, toX, toY, state) || Tower.towerLegalMove(initialX, initialY, toX, toY, state);
 
     }
@@ -486,7 +695,7 @@ class Pawn extends Piece {
                 if (toX - initialX != -1 && toX - initialX != -2) {
                     return false;
                 }
-                if (toY != initialY && state[toX][toY].piece==null ) {
+                if (toY != initialY && state[toX][toY].piece == null) {
                     return false;
                 }
             }
@@ -521,7 +730,7 @@ class Pawn extends Piece {
                 if (toX - initialX != 1 && toX - initialX != 2) {
                     return false;
                 }
-                if (toY != initialY && state[toX][toY].piece==null) {
+                if (toY != initialY && state[toX][toY].piece == null) {
                     return false;
                 }
             }
@@ -555,11 +764,54 @@ class Pawn extends Piece {
     }
 }
 
-const chessTable = new ChessTable();
 
-const countdown = new Timer(1, $countDownP, () => {
-    chessTable.drawTable($mainDiv)
+const game = new Game(157);
+
+//game.chessTable.sendAMove(1,1,2,1);
+
+
+// const countdown = new Timer(0, $countDownP, () => {
+//     game.chessTable.drawTable($mainDiv);
+// })
+game.chessTable.drawTable($mainDiv);
+
+
+
+setInterval(function () {
+    game.getAGameMoves(game.gameID);
+    console.log(game.gameID);
+}, 1000);
+
+const $resetGame = $('<input type="button" value="Reset game" />');
+$resetGame.appendTo("#buttons-div");
+$resetGame.css('margin-left', '50px');
+$resetGame.addClass('button')
+$resetGame.click(() => {
+    console.log('clicked reset' + game.gameID);
+
+    game.resetAGame(game.gameID);
+    // game.chessTable = new ChessTable(game.gameID);
+    // $('#grid-div').remove();
+    // game.chessTable.drawTable($mainDiv);
+});
+
+const $createGame = $('#createGame');
+$createGame.click(() => {
+    game.createAGame('random');
 })
+
+const $input1 = $('#input1');
+const $getAGame = $('#getAGame');
+$getAGame.click(() => {
+    game.gameID = $input1.val();
+    game.chessTable = new ChessTable(game.gameID);
+    $('#grid-div').remove();
+    game.chessTable.drawTable($mainDiv);
+    game.gameMoves = [];
+})
+
+
+
 
 
 
